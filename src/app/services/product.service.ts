@@ -46,6 +46,14 @@ export class ProductoService {
       )
   }
 
+  getProductosActivos() {
+    const url = `${base_url}/productos/activos`;
+    return this.http.get<any>(url, this.headers)
+      .pipe(
+        map((resp:{ok: boolean, productos: Producto[]}) => resp.productos)
+      )
+  }
+
   getProductoById(_id: string){
     const url = `${base_url}/productos/${_id}`;
     return this.http.get<any>(url, this.headers)
