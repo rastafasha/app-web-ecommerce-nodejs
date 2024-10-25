@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -20,6 +20,7 @@ import { UserModule } from './admin/user.module';
 
 import { NgxPayPalModule } from 'ngx-paypal';
 import {SocketIoConfig, SocketIoModule} from "ngx-socket-io";
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 const config: SocketIoConfig = {url: environment.soketServer, options:{}};
 
@@ -44,7 +45,13 @@ const config: SocketIoConfig = {url: environment.soketServer, options:{}};
     SocketIoModule.forRoot(config)
 
   ],
-  providers: [],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
