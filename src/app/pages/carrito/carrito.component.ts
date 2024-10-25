@@ -19,6 +19,9 @@ declare var $:any;
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import * as io from "socket.io-client";
 import { Direccion } from '../../models/direccion.model';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { TransferenciasService } from 'src/app/services/transferencias.service';
+import { PaymentMethod } from 'src/app/models/paymenthmethod.model';
 
 @Component({
   selector: 'app-carrito',
@@ -28,8 +31,6 @@ import { Direccion } from '../../models/direccion.model';
 export class CarritoComponent implements OnInit {
 
   @ViewChild('paypal',{static:true}) paypalElement : ElementRef;
-
-
 
   public direcciones:any =[];
   public identity;
@@ -70,6 +71,23 @@ export class CarritoComponent implements OnInit {
   public error_stock = false;
   public date_string;
 
+  selectedMethod: string = 'Selecciona un método de pago';
+
+  habilitacionFormTransferencia:boolean = false;
+
+  paymentMethods:PaymentMethod[] = []; //array metodos de pago para transferencia (dolares, bolivares, movil)
+  paymentSelected!:PaymentMethod; //metodo de pago seleccionado por el usuario para transferencia
+
+  formTransferencia = new FormGroup({
+    metodo_pago: new FormControl('',Validators.required),
+    bankName: new FormControl('', Validators.required),
+    amount: new FormControl('', Validators.required),
+    referencia: new FormControl('',Validators.required),
+    name_person: new FormControl('', Validators.required),
+    phone: new FormControl('',Validators.required),
+    paymentday: new FormControl('', Validators.required)
+  });
+
   constructor(
     private _userService: UsuarioService,
     private _router : Router,
@@ -81,6 +99,7 @@ export class CarritoComponent implements OnInit {
     private _direccionService :DireccionService,
     private _ventaService :VentaService,
     private webSocketService: WebSocketService,
+    private _trasferencias: TransferenciasService
 
   ) {
     this.identity = _userService.usuario;
@@ -92,6 +111,7 @@ export class CarritoComponent implements OnInit {
     this.listar_direcciones();
     this.listar_postal();
     this.listar_carrito();
+    this.obtenerMetodosdePago();
     
     if(this.identity){
       this.socket.on('new-stock', function (data) {
@@ -102,8 +122,10 @@ export class CarritoComponent implements OnInit {
       $('#card-pay').hide();
       $('#btn-back-data').hide();
       $('#card-data-envio').hide();
-      
 
+      this.renderPayPalButton();
+
+      /*
         paypal.Buttons({
 
           createOrder: (data,actions)=>{
@@ -176,6 +198,7 @@ export class CarritoComponent implements OnInit {
 
           }
         }).render(this.paypalElement.nativeElement);
+      */
       //
       this.url = environment.baseUrl;
 
@@ -185,6 +208,142 @@ export class CarritoComponent implements OnInit {
       this._router.navigate(['/']);
     }
 
+  }
+
+  private obtenerMetodosdePago(){
+    this._trasferencias.getPayments().subscribe(data => {
+      // console.log('metodos de pago: ',data.paymentMethods)
+      this.paymentMethods = data.paymentMethods;
+      console.log('metodos de pago: ',this.paymentMethods)
+    });
+  }
+
+  // metodo para el cambio del select 'tipo de transferencia'
+  onChangePayment(event:Event){
+    const target = event.target as HTMLSelectElement; //obtengo el valor
+    // console.log(target.value)
+
+    // guardo el metodo seleccionado en la variable de clase paymentSelected
+    this.paymentSelected = this.paymentMethods.filter(method => method._id===target.value)[0]
+  }
+
+  sendFormTransfer(){
+    if(this.formTransferencia.valid){
+      // llamo al servicio
+      this._trasferencias.createTransfer(this.formTransferencia.value).subscribe(resultado => {
+        console.log('resultado: ',resultado);
+        if(resultado.ok){
+          // transferencia registrada con exito
+          console.log(resultado.payment);
+          alert('Transferencia registrada con exito');
+        }
+        else{
+          // error al registar la transferencia
+          alert('Error al registrar la transferencia');
+          console.log(resultado.msg);
+        }
+      });
+    }
+  }
+
+  // Método que se llama cuando cambia el select
+  onPaymentMethodChange(event: any) {
+    this.selectedMethod = event.target.value;
+    this.renderPayPalButton(); // Renderiza el botón de nuevo según la opción seleccionada
+  }
+
+  private renderPayPalButton(){
+    // Primero, limpiar el contenedor anterior
+    this.paypalElement.nativeElement.innerHTML = '';
+
+    if(this.selectedMethod==='card' || this.selectedMethod==='paypal'){
+      // deshabilitar el formulario de pago con transferencia
+      this.habilitacionFormTransferencia = false;
+      // Cargar el botón de PayPal con las opciones seleccionadas
+    this.paypalBotones();
+    }
+    else if(this.selectedMethod==='transferencia'){
+      // transferencia bancaria => abrir formulario (en un futuro un modal con formulario)
+      this.habilitacionFormTransferencia = true;
+    }
+    // 
+  }
+
+  private paypalBotones(){
+    paypal.Buttons({
+
+      createOrder: (data,actions)=>{
+        //VALIR STOCK DE PRODUCTOS
+        this.data_venta.detalles.forEach(element => {
+            if(element.producto.stock == 0){
+              this.error_stock = true;
+            }else{
+              this.error_stock = false;
+            }
+
+        });
+
+        if(!this.error_stock){
+          return actions.order.create({
+            purchase_units : [{
+              description : 'Compra en Linea',
+              amount : {
+                currency_code : 'USD',
+                value: Math.round(this.subtotal),
+              }
+
+            }]
+          });
+        }else{
+          this.error_stock = true;
+          this.listar_carrito();
+        }
+      },
+      onApprove : async (data,actions)=>{
+        const order = await actions.order.capture();
+        console.log(order);
+        this.data_venta.idtransaccion = order.purchase_units[0].payments.captures[0].id;
+        this._ventaService.registro(this.data_venta).subscribe(
+          response =>{
+            this.data_venta.detalles.forEach(element => {
+              console.log(element);
+              this._productoService.aumentar_ventas(element.producto._id).subscribe(
+                response =>{
+                },
+                error=>{
+                  console.log(error);
+
+                }
+              );
+                this._productoService.reducir_stock(element.producto._id,element.cantidad).subscribe(
+                  response =>{
+                    this.remove_carrito();
+                    this.listar_carrito();
+                    this.socket.emit('save-carrito', {new:true});
+                    this.socket.emit('save-stock', {new:true});
+                    this._router.navigate(['/app/cuenta/ordenes']);
+                  },
+                  error=>{
+                    console.log(error);
+
+                  }
+                );
+            });
+
+          },
+          error=>{
+            console.log(error);
+
+          }
+        );
+      },
+      // Define si el pago será con tarjeta o PayPal
+      fundingSource: this.selectedMethod === 'card' ? paypal.FUNDING.CARD : paypal.FUNDING.PAYPAL, //agregado
+      onError : err =>{
+        console.log(err);
+
+      }
+    }).render(this.paypalElement.nativeElement);
   }
 
   remove_carrito(){
