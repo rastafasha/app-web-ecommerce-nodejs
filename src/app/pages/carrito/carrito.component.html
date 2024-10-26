@@ -226,7 +226,9 @@
                                 <div class="card">
                                     <div class="card-body p-4" *ngIf="paymentSelected">
                                         <p>Nombre del Banco:&nbsp;{{paymentSelected.bankName}}</p>
-                                        <p>Numero de Cuenta:&nbsp;{{paymentSelected.bankAccount}}</p>
+                                        <p *ngIf="paymentSelected.bankAccount">Numero de Cuenta:&nbsp;{{paymentSelected.bankAccount}}</p>
+                                        <p *ngIf="paymentSelected.phone">Numero de Teléfono:&nbsp;{{paymentSelected.phone}}</p>
+                                        <p *ngIf="paymentSelected.email">Email:&nbsp;{{paymentSelected.email}}</p>
                                         <p>Ciorif:&nbsp;{{paymentSelected.ciorif}}</p>
                                     </div>
                                 </div>
