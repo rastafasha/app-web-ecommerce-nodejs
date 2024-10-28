@@ -52,7 +52,7 @@ iframe .videom {
     display: inline-block;
     white-space: nowrap;
     line-height: 1;
-    vertical-align: middle
+    vertical-align: middle;
 }
 
 .star-rating .fa-star {
@@ -60,7 +60,7 @@ iframe .videom {
     margin-right: .1875rem;
     color: var(--dark-brown);
     font-size: 12px;
-    vertical-align: middle
+    vertical-align: middle;
 }
 
 .star-rating .fa-star.active {
