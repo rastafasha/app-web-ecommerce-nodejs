@@ -55,7 +55,7 @@ export class DireccionService {
   // }
 
   listarUsuario(id:string){
-    const url = `${base_url}/direccions/direcciones/${id}`;
+    const url = `${base_url}/direccions/direccionesusuario/${id}`;
     return this._http.get<any>(url, this.headers)
       .pipe(
         map((resp:{ok: boolean, direcciones: Direccion[]}) => resp.direcciones)
