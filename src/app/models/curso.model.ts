@@ -1,7 +1,7 @@
 import { environment } from "src/environments/environment";
 import { Categoria } from "./categoria.model";
 
-const base_url = environment.baseUrl;
+const base_url = environment.mediaUrlRemoto;
 
 export class Curso{
   constructor(

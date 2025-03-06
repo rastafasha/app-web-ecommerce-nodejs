@@ -6,6 +6,7 @@
         "start": "ng serve",
         "start:dev": "ng serve --port 4202",
         "build": "ng build",
+        "build:appweb": "ng build --configuration appweb",
         "watch": "ng build --watch --configuration development",
         "test": "ng test"
     },
@@ -20,6 +21,8 @@
         "@angular/platform-browser-dynamic": "^14.2.0",
         "@angular/router": "^14.2.0",
         "@ng-bootstrap/ng-bootstrap": "^13.1.0",
+        "@popperjs/core": "^2.11.8",
+        "axios": "^1.7.9",
         "ngx-bootstrap": "^9.0.0",
         "ngx-cookie-service": "^11.0.1",
         "ngx-pagination": "^6.0.2",
