@@ -1,21 +1,18 @@
-<div id="carouselExampleIndicators" class="carousel slide ">
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="8000">
 
-    <div class="carousel-inner" *ngFor="let slider of sliders  ">
-
-        <div class="item active">
+    <div class="carousel-inner">
+        <div class="item" *ngFor="let slider of sliders; let i=index" [class.active]="i === 0">
             <div class="desktop">
-                <div class="BannPpal " style="background-image: url(' {{imagenSerUrl}}/sliders/{{slider.img}}  ')">
+                <div class="BannPpal" [style.background-image]="'url(' + slider.img + ')'">
                     <div class="container">
                         <div class="cuadrotext">
                             <h3 class="Up {{slider.is_activeText}}">{{slider.first_title}}</h3>
                             <p class="Up {{slider.is_activeText}}">{{slider.subtitulo}}</p><br><br>
                             <div class="text-center">
-                                <a href="{{slider.enlace}}" target="{{slider.target}}" class="btn btn-success btn-lg {{slider.mostrarboton}}">Boton </a>
-
+                                <a [href]="slider.enlace" [target]="slider.target" class="btn btn-success btn-lg {{slider.mostrarboton}}">Boton</a>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>

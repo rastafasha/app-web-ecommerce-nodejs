@@ -124,84 +124,7 @@ export class CarritoComponent implements OnInit {
       $('#card-data-envio').hide();
 
       this.renderPayPalButton();
-
-      /*
-        paypal.Buttons({
-
-          createOrder: (data,actions)=>{
-            //VALIR STOCK DE PRODUCTOS
-            this.data_venta.detalles.forEach(element => {
-                if(element.producto.stock == 0){
-                  this.error_stock = true;
-                }else{
-                  this.error_stock = false;
-                }
-
-            });
-
-            if(!this.error_stock){
-              return actions.order.create({
-                purchase_units : [{
-                  description : 'Compra en Linea',
-                  amount : {
-                    currency_code : 'USD',
-                    value: Math.round(this.subtotal),
-                  }
-
-                }]
-              });
-            }else{
-              this.error_stock = true;
-              this.listar_carrito();
-            }
-          },
-          onApprove : async (data,actions)=>{
-            const order = await actions.order.capture();
-            console.log(order);
-            this.data_venta.idtransaccion = order.purchase_units[0].payments.captures[0].id;
-            this._ventaService.registro(this.data_venta).subscribe(
-              response =>{
-                this.data_venta.detalles.forEach(element => {
-                  console.log(element);
-                  this._productoService.aumentar_ventas(element.producto._id).subscribe(
-                    response =>{
-                    },
-                    error=>{
-                      console.log(error);
-
-                    }
-                  );
-                    this._productoService.reducir_stock(element.producto._id,element.cantidad).subscribe(
-                      response =>{
-                        this.remove_carrito();
-                        this.listar_carrito();
-                        this.socket.emit('save-carrito', {new:true});
-                        this.socket.emit('save-stock', {new:true});
-                        this._router.navigate(['/app/cuenta/ordenes']);
-                      },
-                      error=>{
-                        console.log(error);
-
-                      }
-                    );
-                });
-
-              },
-              error=>{
-                console.log(error);
-
-              }
-            );
-          },
-          onError : err =>{
-            console.log(err);
-
-          }
-        }).render(this.paypalElement.nativeElement);
-      */
-      //
       this.url = environment.baseUrl;
-
       this.carrito_real_time();
 
     }else{
@@ -407,6 +330,19 @@ export class CarritoComponent implements OnInit {
       }
     );
   }
+  select_postal(event,data){
+    //RESTAR PRECIO POSTAL ANTERIOR
+    this.subtotal = Math.round(this.subtotal - parseInt(this.medio_postal.precio));
+
+    this.medio_postal = {
+      tipo_envio : data.titulo,
+      precio: data.precio,
+      tiempo: data.tiempo,
+      dias: data.dias,
+    }
+    this.subtotal = Math.round(this.subtotal + parseInt(this.medio_postal.precio));
+
+  }
 
   listar_direcciones(){
     this._direccionService.listarUsuario(this.identity.uid).subscribe(
@@ -508,7 +444,6 @@ export class CarritoComponent implements OnInit {
   }
 
   
-
   get_data_cupon(event,cupon){
     this.data_keyup = this.data_keyup + 1;
 
@@ -591,19 +526,7 @@ export class CarritoComponent implements OnInit {
 
   }
 
-  select_postal(event,data){
-    //RESTAR PRECIO POSTAL ANTERIOR
-    this.subtotal = Math.round(this.subtotal - parseInt(this.medio_postal.precio));
-
-    this.medio_postal = {
-      tipo_envio : data.titulo,
-      precio: data.precio,
-      tiempo: data.tiempo,
-      dias: data.dias,
-    }
-    this.subtotal = Math.round(this.subtotal + parseInt(this.medio_postal.precio));
-
-  }
+  
 
   verify_data(){
     if(this.id_direccion){
@@ -663,7 +586,7 @@ export class CarritoComponent implements OnInit {
 
   }
 
-  verify_dataComplete(){debugger
+  verify_dataComplete(){
     if(this.id_direccion){
       this.msm_error = '';
       $('#btn-verify-data').animate().hide();
@@ -723,7 +646,7 @@ export class CarritoComponent implements OnInit {
 
   }
 
-  saveVenta(){debugger
+  saveVenta(){
     this._ventaService.registro(this.data_venta).subscribe(response =>{
       this.data_venta.detalles.forEach(element => {
         console.log(element);

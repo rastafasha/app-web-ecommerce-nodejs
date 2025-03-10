@@ -49,6 +49,8 @@ export class SliderService {
 
   }
 
+  
+
 
   getSliderById(_id: string){
     const url = `${base_url}/sliders/${_id}`;
