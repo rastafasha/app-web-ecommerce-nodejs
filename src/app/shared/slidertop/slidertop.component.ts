@@ -26,7 +26,7 @@ export class SlidertopComponent implements OnInit {
   }
 
   obtenerSliders(){
-    return this.sliderService.getSlidersActives().subscribe(
+    return this.sliderService.getSliders().subscribe(
       resp=>{
         this.sliders = resp;
         console.log(this.sliders);

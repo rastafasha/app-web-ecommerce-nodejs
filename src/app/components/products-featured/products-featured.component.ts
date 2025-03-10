@@ -18,7 +18,6 @@ export class ProductsFeaturedComponent implements OnInit {
 
   error!: string;
 
-
   public producto : any = {};
 
   private http: HttpClient;

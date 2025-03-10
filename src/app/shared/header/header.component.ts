@@ -10,10 +10,10 @@ import { CongeneralService } from 'src/app/services/congeneral.service';
 import { MessageService } from 'src/app/services/message.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
-import { environment } from 'src/environments/environment';
 import { CarritoService } from 'src/app/services/carrito.service';
 import { ProductoService } from 'src/app/services/product.service';
 
+import { environment } from 'src/environments/environment';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import * as io from "socket.io-client";
 import { CursoService } from 'src/app/services/curso.service';
@@ -51,11 +51,11 @@ export class HeaderComponent implements OnInit, DoCheck {
     public categoryService: CategoryService,
     public configuracionService: CongeneralService,
     public router: Router,
+    public activatedRoute: ActivatedRoute,
     public http: HttpClient,
     private messageService: MessageService,
     private storageService: StorageService,
     private usuarioService: UsuarioService,
-    public activatedRoute: ActivatedRoute,
     private _carritoService:CarritoService,
     private _productoService : ProductoService,
     private cursoService : CursoService,
@@ -76,9 +76,6 @@ export class HeaderComponent implements OnInit, DoCheck {
 
 
    ngOnInit(): void {
-
-
-
     if(this.storageService.existCart()){
       this.cartItems = this.storageService.getCart();
     }
