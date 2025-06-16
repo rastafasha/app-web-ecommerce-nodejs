@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Tienda } from 'src/app/models/tienda.model';
+import { TiendaService } from 'src/app/services/tienda.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import Swal from 'sweetalert2';
 
@@ -14,20 +16,23 @@ export class RegisterComponent implements OnInit {
   public formSumitted = false;
 
   registerForm:FormGroup;
-
+  tiendas: Tienda[];
+  tienda: Tienda;
 
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private tiendaService: TiendaService,
   ) {
     this.registerForm = this.fb.group({
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
-      email: [ '', [Validators.required, Validators.email, Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$")] ],
+      email: [ '', [Validators.required, Validators.email] ],
       password: ['', Validators.required],
       password2: ['', Validators.required],
+      local: [''],
       terminos: [false, Validators.required],
 
     }, {
@@ -40,10 +45,25 @@ export class RegisterComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.getTiendas();
+  }
+
+  getTiendas(){
+    this.tiendaService.cargarTiendas().subscribe((resp:any)=>{
+      this.tiendas = resp;
+      //filtramos las tiendas y buscamos la que se llama web
+      this.tiendas = this.tiendas.filter((tienda:Tienda) => tienda.nombre === 'Web');
+      //mostramos la info de la tienda con el nombre web
+      this.tienda = this.tiendas[0];
+
+    })
   }
 
   crearUsuario(){
     this.formSumitted = true;
+    //agregamos el id de la tienda a la respuesta
+
+    this.registerForm.value.local = this.tienda._id;
     console.log(this.registerForm.value);
 
     if(this.registerForm.invalid){

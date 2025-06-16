@@ -4,6 +4,7 @@ export interface RegisterForm{
   email: string,
   password: string,
   password2: string,
+  local: string,
   terminos: boolean
 }
 
